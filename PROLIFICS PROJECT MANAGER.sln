@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PPM.Ui.Consoles", "PPM.Ui.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PPM.Test", "PPM.Test\PPM.Test.csproj", "{123CA0BD-0D23-4DE5-AD27-64D1DB099986}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PPM.DAL", "PPM.DAL\PPM.DAL.csproj", "{5C613DCD-2D27-4BC9-875B-DDD306B5C61E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +44,9 @@ Global
 		{123CA0BD-0D23-4DE5-AD27-64D1DB099986}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{123CA0BD-0D23-4DE5-AD27-64D1DB099986}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{123CA0BD-0D23-4DE5-AD27-64D1DB099986}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C613DCD-2D27-4BC9-875B-DDD306B5C61E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C613DCD-2D27-4BC9-875B-DDD306B5C61E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C613DCD-2D27-4BC9-875B-DDD306B5C61E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C613DCD-2D27-4BC9-875B-DDD306B5C61E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
