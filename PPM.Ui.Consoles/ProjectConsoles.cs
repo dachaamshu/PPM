@@ -1,7 +1,9 @@
 using PPM.Model;
 using PPM.Domain;
+using PPM.DAL;
 using Microsoft.Win32.SafeHandles;
 using System.Reflection.Emit;
+using PPM.Dal;
 
 namespace PPM.Ui.Consoles
 {
@@ -43,8 +45,8 @@ namespace PPM.Ui.Consoles
                         }
                     }
 
-
-                    if (ProjectRepo.projectList.Exists(item => item.ProjectId == projectId))
+                    ProjectDal projectDal = new ProjectDal();
+                    if (projectDal.IsProjectExists(projectId))
                     {
                         Console.ForegroundColor = ConsoleColor.DarkCyan;
                         Console.WriteLine("---------------------------PROJECT DETAILS ALREADY EXISTS------------------------------");
@@ -62,10 +64,10 @@ namespace PPM.Ui.Consoles
                 project.ProjectName = Console.ReadLine() ?? string.Empty;
 
                 Console.WriteLine("Enter StartDate: ");
-                project.StartDate = DateOnly.Parse(Console.ReadLine() ?? string.Empty);
+                project.StartDate = DateTime.Parse(Console.ReadLine() ?? string.Empty);
 
                 Console.WriteLine("Enter EndDate: ");
-                project.EndDate = DateOnly.Parse(Console.ReadLine() ?? string.Empty);
+                project.EndDate = DateTime.Parse(Console.ReadLine() ?? string.Empty);
 
                 while (project.StartDate >= project.EndDate)
                 {
@@ -74,7 +76,7 @@ namespace PPM.Ui.Consoles
                     Console.WriteLine("INVALID PROJECT DETAILS : END DATE MUST BE AFTER START DATE.");
                     Console.ResetColor();
                     Console.WriteLine("Please Enter Valid EndDate: ");
-                    project.EndDate = DateOnly.Parse(Console.ReadLine() ?? string.Empty);
+                    project.EndDate = DateTime.Parse(Console.ReadLine() ?? string.Empty);
 
                 }
 
@@ -90,8 +92,10 @@ namespace PPM.Ui.Consoles
 
                 if (y == "yes" || y == "Yes")
                 {
+                    EmployeeRepo employeeRepo = new EmployeeRepo();
+                    List<Employee> employeeList = employeeRepo.ListAll();
 
-                    if (EmployeeRepo.employeeList.Count() == 0)
+                    if (employeeList.Count() == 0)
                     {
                         Console.ForegroundColor = ConsoleColor.DarkCyan;
                         Console.WriteLine("There are no Employees in Employee list.");
@@ -122,10 +126,11 @@ namespace PPM.Ui.Consoles
                                     {
                                         return;
                                     }
+                                    
+                                    EmployeeDal employeeDal = new EmployeeDal();
+                                    //var employeeExist = EmployeeRepo.employeeList.Exists(item => item.EmployeeId == employeeId);
 
-                                    var employeeExist = EmployeeRepo.employeeList.Exists(item => item.EmployeeId == employeeId);
-
-                                    if (employeeExist)
+                                    if (employeeDal.IsEmployeeExists(employeeId))
                                     {
                                         break;
                                     }
@@ -135,10 +140,11 @@ namespace PPM.Ui.Consoles
                                         break;
                                     }
                                 }
+                                
+                                EmployeeProjectDal employeeProjectDal = new EmployeeProjectDal();
+                                //var employeeProjectExist = EmployeeProjectRepo.employeeProjectList.Exists(item => item.ProjectId == projectId && item.EmployeeId == employeeId);
 
-                                var employeeProjectExist = EmployeeProjectRepo.employeeProjectList.Exists(item => item.ProjectId == projectId && item.EmployeeId == employeeId);
-
-                                if (employeeProjectExist)
+                                if (employeeProjectDal.IsEmployeeProjectExists(projectId,employeeId))
                                 {
                                     Console.ForegroundColor = ConsoleColor.DarkCyan;
                                     Console.WriteLine("Employee already exist in the project.");
@@ -147,9 +153,11 @@ namespace PPM.Ui.Consoles
                                 }
                                 else
                                 {
-                                    var query2 = from item in EmployeeRepo.employeeList
-                                                 where item.EmployeeId == employeeId
-                                                 select new { item.EmployeeId, item.FirstName, item.LastName, item.RoleId };
+                                    //EmployeeRepo employeeRepo = new EmployeeRepo();
+                                    var query2 = employeeRepo.ListById(employeeId);
+                                    // from item in EmployeeRepo.employeeList
+                                    //              where item.EmployeeId == employeeId
+                                    //              select new { item.EmployeeId, item.FirstName, item.LastName, item.RoleId };
 
                                     foreach (var item in query2)
                                     {
@@ -172,7 +180,7 @@ namespace PPM.Ui.Consoles
                                 //     System.Console.WriteLine("EmployeeId: {0} , Roleid : {1} , Project Id :{2}", item.EmployeeId, item.RoleId, item.ProjectId);
                                 // }
 
-                                employeeProjectRepo.AddEmployeeToProject(obj.ProjectId, obj.ProjectName, employeeId, obj.FirstName, obj.LastName, obj.RoleId);
+                                employeeProjectRepo.AddEmployeeToProject(obj.ProjectId,obj.ProjectName,employeeId,obj.FirstName,obj.LastName, obj.RoleId);
 
                                 Console.ForegroundColor = ConsoleColor.DarkCyan;
                                 Console.WriteLine("-----------EMPLOYEE  ADDED TO PROJECT SUCCESSFULLY-------------------");
@@ -233,60 +241,80 @@ namespace PPM.Ui.Consoles
         public void ViewProjectById()
         {
             ViewProjects();
-            while (true)
+
+            ProjectRepo projectRepo = new ProjectRepo();
+            List<Project> projectList = projectRepo.ListAll();
+
+            if (projectList.Count() > 0)
             {
-
-                Console.WriteLine("Enter ProjectId : ");
-                int ProjectId = int.Parse(Console.ReadLine() ?? string.Empty);
-
-                if (ProjectRepo.projectList.Exists(item => item.ProjectId == ProjectId))
+                while (true)
                 {
 
-                    Console.ForegroundColor = ConsoleColor.DarkCyan;
-                    Console.WriteLine("VIEW PROJECT DETAILS : ");
-                    Console.ResetColor();
+                    Console.WriteLine("Enter ProjectId : ");
+                    int ProjectId = int.Parse(Console.ReadLine() ?? string.Empty);
 
-                    foreach (Project item in ProjectRepo.projectList)
+
+                    List<Project> projectlist = projectRepo.ListById(ProjectId);
+
+                    if (projectlist.Count > 0)
                     {
-                        if (item.ProjectId == ProjectId)
-                        {
 
-                            Console.WriteLine("ProjectId : {0} , ProjectName : {1} , StartDate : {2} , EndDate : {3}", item.ProjectId, item.ProjectName, item.StartDate, item.EndDate);
+                        Console.ForegroundColor = ConsoleColor.DarkCyan;
+                        Console.WriteLine("VIEW PROJECT DETAILS : ");
+                        Console.ResetColor();
+
+                        foreach (Project item in projectlist)
+                        {
+                            if (item.ProjectId == ProjectId)
+                            {
+
+                                Console.WriteLine("ProjectId : {0} , ProjectName : {1} , StartDate : {2} , EndDate : {3}", item.ProjectId, item.ProjectName, item.StartDate, item.EndDate);
+
+                            }
 
                         }
 
+                        break;
                     }
 
-                    break;
+                    else
+                    {
+
+                        Console.ForegroundColor = ConsoleColor.DarkCyan;
+                        Console.WriteLine("PROJECTID DOESN'T EXIST.");
+                        Console.ResetColor();
+
+                    }
                 }
 
-                else
-                {
-
-                    Console.ForegroundColor = ConsoleColor.DarkCyan;
-                    Console.WriteLine("PROJECTID DOESN'T EXIST.");
-                    Console.ResetColor();
-
-                }
             }
-
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.DarkCyan;
+                Console.WriteLine("The Project List is Empty.");
+                Console.ResetColor();
+            }
         }
 
         public void DeleteProjectById()
         {
             ViewProjects();
+            ProjectRepo projectRepo = new ProjectRepo();
+            List<Project> projectList = projectRepo.ListAll();
 
-            if (ProjectRepo.projectList.Count() > 0)
+            if (projectList.Count() > 0)
             {
 
                 while (true)
                 {
                     Console.WriteLine("Enter ProjectId : ");
                     int validProjectId = int.Parse(Console.ReadLine() ?? string.Empty);
-                    if (ProjectRepo.projectList.Exists(item => item.ProjectId == validProjectId))
+                    ProjectDal projectDal = new ProjectDal();
+                    EmployeeProjectDal employeeProjectDal = new EmployeeProjectDal();
+                    if (projectDal.IsProjectExists(validProjectId))
                     {
-                        
-                        if (EmployeeProjectRepo.employeeProjectList.Exists(item => item.ProjectId == validProjectId))
+
+                        if (employeeProjectDal.IsProjectExist(validProjectId))
                         {
 
                             Console.ForegroundColor = ConsoleColor.DarkCyan;

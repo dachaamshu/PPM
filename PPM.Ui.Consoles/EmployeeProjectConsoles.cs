@@ -10,6 +10,8 @@ using System.Collections;
 using System.Transactions;
 using System.Reflection.Emit;
 using System.Linq.Expressions;
+using PPM.Dal;
+using PPM.DAL;
 
 namespace PPM.Ui.Consoles
 {
@@ -29,16 +31,22 @@ namespace PPM.Ui.Consoles
       int roleId;
 
 
-         EmployeeProject employeeProject = new EmployeeProject();
-         ProjectConsoles projectConsoles = new ProjectConsoles();
+      EmployeeProject employeeProject = new EmployeeProject();
+      ProjectConsoles projectConsoles = new ProjectConsoles();
 
-         EmployeeConsoles employeeConsoles = new EmployeeConsoles();
-         public void AddEmployeeToProjectMethod()
+      EmployeeConsoles employeeConsoles = new EmployeeConsoles();
+      public void AddEmployeeToProjectMethod()
+      {
+
+         projectConsoles.ViewProjects();
+
+         int projectId;
+
+         ProjectRepo projectRepo = new ProjectRepo();
+         List<Project> projectList = projectRepo.ListAll();
+
+         if (projectList.Count() > 0)
          {
-
-            projectConsoles.ViewProjects();
-
-            int projectId;
 
             while (true)
 
@@ -54,9 +62,11 @@ namespace PPM.Ui.Consoles
 
                }
 
-               bool projectExist = ProjectRepo.projectList.Any(p => p.ProjectId == projectId);
+               ProjectDal projectDal = new ProjectDal();
 
-               if (projectExist)
+               //bool projectExist = ProjectRepo.projectList.Any(p => p.ProjectId == projectId);
+
+               if (projectDal.IsProjectExists(projectId))
                {
                   break;
                }
@@ -71,9 +81,11 @@ namespace PPM.Ui.Consoles
 
             }
 
-            var query1 = from item in ProjectRepo.projectList
-                         where item.ProjectId == projectId
-                         select new { item.ProjectId, item.ProjectName };
+            //ProjectRepo projectRepo = new ProjectRepo();
+            var query1 = projectRepo.ListById(projectId);
+            // from item in ProjectRepo.projectList
+            //              where item.ProjectId == projectId
+            //              select new { item.ProjectId, item.ProjectName };
 
             foreach (var item in query1)
             {
@@ -87,98 +99,130 @@ namespace PPM.Ui.Consoles
 
             int employeeId;
 
-            while (true)
+            EmployeeRepo employeeRepo = new EmployeeRepo();
+            List<Employee> employeeList = employeeRepo.ListAll();
+
+            if (employeeList.Count() > 0)
             {
+
                while (true)
                {
-
-                  System.Console.WriteLine("Enter the EmployeeId : ");
-                  employeeId = int.Parse(System.Console.ReadLine() ?? string.Empty);
-
-                  if (employeeId == 0)
+                  while (true)
                   {
-                     return;
+
+                     System.Console.WriteLine("Enter the EmployeeId : ");
+                     employeeId = int.Parse(System.Console.ReadLine() ?? string.Empty);
+
+                     if (employeeId == 0)
+                     {
+                        return;
+
+                     }
+
+                     EmployeeDal employeeDal = new EmployeeDal();
+
+                     //bool employeeExist = EmployeeRepo.employeeList.Any(p => p.EmployeeId == employeeId);
+
+                     if (employeeDal.IsEmployeeExists(employeeId))
+                     {
+
+                        break;
+
+                     }
+
+                     else
+                     {
+
+                        System.Console.WriteLine("Please Enter Correct EmployeeId.");
+
+                     }
 
                   }
 
-                  bool employeeExist = EmployeeRepo.employeeList.Any(p => p.EmployeeId == employeeId);
+                  EmployeeProjectDal employeeProjectDal = new EmployeeProjectDal();
+                  //bool employeeProjectExist = EmployeeProjectRepo.employeeProjectList.Any(p => p.ProjectId == projectId && p.EmployeeId == employeeId);
 
-                  if (employeeExist)
+                  if (employeeProjectDal.IsEmployeeProjectExists(projectId, employeeId))
                   {
-
-                     break;
+                     System.Console.WriteLine("Employee already added to the project.");
 
                   }
 
                   else
                   {
+                     // EmployeeRepo employeeRepo = new EmployeeRepo();
+                     var query2 = employeeRepo.ListById(employeeId);
+                     // from items in EmployeeRepo.employeeList
+                     //              where items.EmployeeId == employeeId
+                     //              select new { items.EmployeeId, items.FirstName, items.LastName, items.RoleId };
 
-                     System.Console.WriteLine("Please Enter Correct EmployeeId.");
+                     foreach (var item in query2)
+                     {
 
-                  }
+                        employeeId = item.EmployeeId;
+                        firstName = item.FirstName;
+                        lastName = item.LastName;
+                        roleId = item.RoleId;
 
-               }
+                     }
 
-               bool employeeProjectExist = EmployeeProjectRepo.employeeProjectList.Any(p => p.ProjectId == projectId && p.EmployeeId == employeeId);
-
-               if (employeeProjectExist)
-               {
-                  System.Console.WriteLine("Employee already added to the project.");
-
-               }
-
-               else
-               {
-
-                  var query2 = from items in EmployeeRepo.employeeList
-                               where items.EmployeeId == employeeId
-                               select new { items.EmployeeId, items.FirstName, items.LastName, items.RoleId };
-
-                  foreach (var item in query2)
-                  {
-
-                     employeeId = item.EmployeeId;
-                     firstName = item.FirstName;
-                     lastName = item.LastName;
-                     roleId = item.RoleId;
+                     break;
 
                   }
 
-                  break;
-
                }
 
+               employeeProjectRepo.AddEmployeeToProject(projectId, projectName, employeeId, firstName, lastName, roleId);
+
+               Console.ForegroundColor = ConsoleColor.DarkCyan;
+               Console.WriteLine("-----------EMPLOYEE  ADDED TO PROJECT SUCCESSFULLY-------------------");
+               Console.ResetColor();
+            }
+            else
+            {
+               Console.ForegroundColor = ConsoleColor.DarkCyan;
+               Console.WriteLine("The Employee List is Empty.");
+               Console.ResetColor();
             }
 
-            employeeProjectRepo.AddEmployeeToProject(projectId,projectName,employeeId,firstName, lastName ,roleId);
-
-            Console.ForegroundColor = ConsoleColor.DarkCyan;
-            Console.WriteLine("-----------EMPLOYEE  ADDED TO PROJECT SUCCESSFULLY-------------------");
-            Console.ResetColor();
-
-
          }
-
-         public void RemoveEmployeefromProjectMethod()
+         else
          {
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
+            Console.WriteLine("The Project List is Empty.");
+            Console.ResetColor();
+         }
+      }
 
-            var flag = true;
+      public void RemoveEmployeefromProjectMethod()
+      {
 
-            while (flag)
+         var flag = true;
 
+         while (flag)
+         {
+            // ProjectConsoles projectConsoles = new ProjectConsoles();
+            // projectConsoles.ViewProjects();
+            ViewAddEmployeetoProject();
+
+            // ProjectRepo projectRepo = new ProjectRepo();
+            // List<Project> projectList = projectRepo.ListAll();
+            EmployeeProjectRepo employeeProjectRepo = new EmployeeProjectRepo();
+            List<EmployeeProject> employeeProjectList = employeeProjectRepo.ViewEmployeeProject();
+
+            if (employeeProjectList.Count() > 0)
             {
-
-             //  ViewProjects();
-               ViewAddEmployeetoProject();
 
                while (true)
                {
                   Console.WriteLine("Enter the ProjectId : ");
                   projectId = int.Parse(Console.ReadLine() ?? string.Empty);
 
-                  var projectExist = ProjectRepo.projectList.Exists(item => item.ProjectId == projectId);
+                  ProjectDal projectDal = new ProjectDal();
 
-                  if (projectExist)
+                  //var projectExist = ProjectRepo.projectList.Exists(item => item.ProjectId == projectId);
+
+                  if (projectDal.IsProjectExists(projectId))
                   {
 
                      break;
@@ -190,21 +234,23 @@ namespace PPM.Ui.Consoles
                }
 
                //ViewEmployees();
-              // ViewAddEmployeetoProject();
+               // ViewAddEmployeetoProject();
 
 
                Console.WriteLine("Enter the EmployeeId: ");
                employeeId = int.Parse(Console.ReadLine() ?? string.Empty);
 
-               var employeeExist = EmployeeRepo.employeeList.Exists(item => item.EmployeeId == employeeId);
+               EmployeeDal employeeDal = new EmployeeDal();
 
-               if (employeeExist)
+               //var employeeExist = EmployeeRepo.employeeList.Exists(item => item.EmployeeId == employeeId);
+
+               if (employeeDal.IsEmployeeExists(employeeId))
                {
 
+                  EmployeeProjectDal employeeProjectDal = new EmployeeProjectDal();
+                  //bool employeeInProject = EmployeeProjectRepo.employeeProjectList.Exists(item => item.ProjectId == projectId && item.EmployeeId == employeeId);
 
-                  bool employeeInProject = EmployeeProjectRepo.employeeProjectList.Exists(item => item.ProjectId == projectId && item.EmployeeId == employeeId);
-
-                  if (employeeInProject)
+                  if (employeeProjectDal.IsEmployeeProjectExists(projectId, employeeId))
                   {
 
                      Console.WriteLine();
@@ -236,7 +282,7 @@ namespace PPM.Ui.Consoles
                System.Console.WriteLine("Do you want to remove another employee from the project? ");
 
                string choice = System.Console.ReadLine() ?? string.Empty;
-               
+
 
                if (choice != "yes")
 
@@ -245,39 +291,48 @@ namespace PPM.Ui.Consoles
                   flag = false;
 
                }
-
-            }
-
-         }
-
-         public List<EmployeeProject> ViewAddEmployeetoProject()
-         {
-            Console.ForegroundColor = ConsoleColor.DarkCyan;
-            Console.WriteLine("VIEW EMPLOYEES IN PROJECT: ");
-            Console.ResetColor();
-            Console.WriteLine();
-
-            if (EmployeeProjectRepo.employeeProjectList.Count <= 0)
-            {
-               Console.WriteLine("The list is Empty.");
             }
             else
             {
-
-               foreach (EmployeeProject item in EmployeeProjectRepo.employeeProjectList)
-               {
-                  Console.WriteLine("ProjectId : {0}, ProjectName : {1} , EmployeeId : {2} , FirstName : {3} , LastName : {4} , RoleId : {5} ", item.ProjectId, item.ProjectName, item.EmployeeId, item.FirstName, item.LastName, item.RoleId);
-               }
+               Console.ForegroundColor = ConsoleColor.DarkCyan;
+               Console.WriteLine("The List is Empty.");
+               Console.ResetColor();
+               break;
             }
 
-            return EmployeeProjectRepo.employeeProjectList;
          }
 
       }
 
+      public List<EmployeeProject> ViewAddEmployeetoProject()
+      {
+         EmployeeProjectRepo employeeProjectRepo = new EmployeeProjectRepo();
+         Console.ForegroundColor = ConsoleColor.DarkCyan;
+         Console.WriteLine("VIEW EMPLOYEES IN PROJECT: ");
+         Console.ResetColor();
+         Console.WriteLine();
+
+         if (employeeProjectRepo.ViewEmployeeProject().Count == 0)
+         {
+            Console.WriteLine("The list is Empty.");
+         }
+         else
+         {
+
+            foreach (EmployeeProject item in employeeProjectRepo.ViewEmployeeProject())
+            {
+               Console.WriteLine("ProjectId : {0},ProjectName : {1} , EmployeeId : {2} ,FirstName : {3},LastName : {4} , RoleId : {5} ", item.ProjectId, item.ProjectName, item.EmployeeId, item.FirstName, item.LastName, item.RoleId);
+            }
+         }
+
+         return EmployeeProjectRepo.employeeProjectList;
+      }
+
    }
 
+}
 
 
 
-   
+
+

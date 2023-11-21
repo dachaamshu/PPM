@@ -1,14 +1,16 @@
 using PPM.Domain;
 using PPM.Model;
+using PPM.DAL;
 using System.Text.RegularExpressions;
 using System.Linq.Expressions;
 using System.Numerics;
 namespace PPM.Ui.Consoles
 {
-    public class EmployeeConsoles 
+    public class EmployeeConsoles
     {
         EmployeeRepo employeeRepo = new EmployeeRepo();
         RoleConsoles roleConsoles = new RoleConsoles();
+        int RoleId;
 
         public void AddEmployeeMethod()
         {
@@ -35,7 +37,9 @@ namespace PPM.Ui.Consoles
 
                     }
 
-                    if (EmployeeRepo.employeeList.Exists(item => item.EmployeeId == employeeId))
+                    EmployeeDal employeeDal = new EmployeeDal();
+
+                    if (employeeDal.IsEmployeeExists(employeeId))
                     {
                         Console.ForegroundColor = ConsoleColor.DarkCyan;
                         Console.WriteLine("-------------------------------EMPLOYEE DETAILS ALREADY EXISTS--------------------------");
@@ -85,41 +89,46 @@ namespace PPM.Ui.Consoles
 
                 roleConsoles.ViewRoles();
 
-                if (RoleRepo.roleList.Count == 0)
-                {
+                // RoleRepo roleRepo = new RoleRepo();
+                // List<Role> roles = roleRepo.ListAll();
 
-                    employee.RoleId = 0;
+                // if (roles.Count == 0)
+                // {
 
-                }
+                //     employee.RoleId = 0;
 
-                else
-                {
+                // }
+
+                // else
+                // {
 
                     while (true)
                     {
 
                         Console.WriteLine("Enter the RoleId : ");
-                        int RoleId = int.Parse(Console.ReadLine() ?? string.Empty);
+                        RoleId = int.Parse(Console.ReadLine() ?? string.Empty);
 
-                        var roleExists = RoleRepo.roleList.Exists(item => item.RoleId == RoleId);
+                        //var roleExists = RoleRepo.roleList.Exists(item => item.RoleId == RoleId);
+                        RoleDal roleDal = new RoleDal();
 
-                        if (roleExists)
+                        if (!roleDal.IsRoleExists(RoleId))
                         {
-                            employee.RoleId = RoleId;
-                            break;
-                        }
-                        else
-                        {
-
                             Console.WriteLine("Please Enter a valid RoleId.");
 
                         }
-                    }
-                }
+                        else
+                        {
+                            employee.RoleId = RoleId;
+                            break;
 
-                var query1 = from item in RoleRepo.roleList
-                             where item.RoleId == employee.RoleId
-                             select new { item.RoleId };
+                        }
+                    }
+               // }
+                RoleRepo roleRepo = new RoleRepo();
+                var query1 = roleRepo.ListById(RoleId);
+                //  from item in RoleRepo.roleList
+                //              where item.RoleId == employee.RoleId
+                //              select new { item.RoleId };
 
                 foreach (var item in query1)
                 {
@@ -131,6 +140,7 @@ namespace PPM.Ui.Consoles
                 Console.ResetColor();
 
                 employeeRepo.AddEntity(employee);
+
             }
         }
 
@@ -169,39 +179,55 @@ namespace PPM.Ui.Consoles
         {
             ViewEmployees();
 
-            while (true)
+            EmployeeRepo employeeRepo = new EmployeeRepo();
+            List<Employee> employeeList = employeeRepo.ListAll();
+
+            if (employeeList.Count() > 0)
             {
 
-                Console.WriteLine("Enter EmployeeId : ");
-                int id = int.Parse(Console.ReadLine() ?? string.Empty);
-
-                if (EmployeeRepo.employeeList.Exists(item => item.EmployeeId == id))
+                while (true)
                 {
 
-                    Console.ForegroundColor = ConsoleColor.DarkCyan;
-                    Console.WriteLine("VIEW EMPLOYEE DETAILS :  ");
-                    Console.ResetColor();
+                    Console.WriteLine("Enter EmployeeId : ");
+                    int id = int.Parse(Console.ReadLine() ?? string.Empty);
 
-                    foreach (Employee item in EmployeeRepo.employeeList)
+                    // EmployeeRepo employeeRepo = new EmployeeRepo();
+                    List<Employee> employeelist = employeeRepo.ListById(id);
+
+                    if (employeelist.Count > 0)
                     {
 
-                        if (item.EmployeeId == id)
+                        Console.ForegroundColor = ConsoleColor.DarkCyan;
+                        Console.WriteLine("VIEW EMPLOYEE DETAILS :  ");
+                        Console.ResetColor();
+
+                        foreach (Employee item in employeelist)
                         {
-                            Console.WriteLine("EmployeeId : {0} , FirstName : {1} , LastName : {2} , EmailId : {3} , MobileNumber : {4} , Address : {5} , RoleId : {6}", item.EmployeeId, item.FirstName, item.LastName, item.EmailId, item.MobileNumber, item.Address, item.RoleId);
+
+                            if (item.EmployeeId == id)
+                            {
+                                Console.WriteLine("EmployeeId : {0} , FirstName : {1} , LastName : {2} , EmailId : {3} , MobileNumber : {4} , Address : {5} , RoleId : {6}", item.EmployeeId, item.FirstName, item.LastName, item.EmailId, item.MobileNumber, item.Address, item.RoleId);
+
+                            }
 
                         }
-                        
+                        break;
                     }
-                    break;
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkCyan;
+                        Console.WriteLine("EMPLOYEEID DOESN'T EXIST.");
+                        Console.ResetColor();
+                    }
                 }
-                else
-                {
-                    Console.ForegroundColor = ConsoleColor.DarkCyan;
-                    Console.WriteLine("EMPLOYEEID DOESN'T EXIST.");
-                    Console.ResetColor();
-                }
-            }
 
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.DarkCyan;
+                Console.WriteLine("The Employee List is Empty.");
+                Console.ResetColor();
+            }
         }
 
 
@@ -209,8 +235,10 @@ namespace PPM.Ui.Consoles
         {
 
             ViewEmployees();
+            EmployeeRepo employeeRepo = new EmployeeRepo();
+            List<Employee> employeeList = employeeRepo.ListAll();
 
-            if (EmployeeRepo.employeeList.Count() > 0)
+            if (employeeList.Count() > 0)
             {
 
                 while (true)
@@ -218,9 +246,13 @@ namespace PPM.Ui.Consoles
 
                     Console.WriteLine("Enter EmployeeId : ");
                     int validEmployeeId = int.Parse(Console.ReadLine() ?? string.Empty);
-                    if (EmployeeRepo.employeeList.Exists(item => item.EmployeeId == validEmployeeId))
+
+                    EmployeeDal employeeDal = new EmployeeDal();
+
+                    if (employeeDal.IsEmployeeExists(validEmployeeId))
                     {
-                        if (EmployeeProjectRepo.employeeProjectList.Exists(item => item.EmployeeId == validEmployeeId))
+                        EmployeeProjectDal employeeProjectDal = new EmployeeProjectDal();
+                        if (employeeProjectDal.IsEmployeeExist(validEmployeeId))
                         {
                             Console.ForegroundColor = ConsoleColor.DarkCyan;
                             System.Console.WriteLine("Employee is assigned to Project.");
@@ -254,8 +286,6 @@ namespace PPM.Ui.Consoles
             }
 
         }
-
-
     }
 }
 
