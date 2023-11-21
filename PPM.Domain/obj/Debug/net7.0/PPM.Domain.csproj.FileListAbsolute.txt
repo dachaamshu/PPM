@@ -13,3 +13,5 @@ C:\Users\SDacha\Documents\New folder\PROLIFICS PROJECT MANAGER\PPM.Domain\obj\De
 C:\Users\SDacha\Documents\New folder\PROLIFICS PROJECT MANAGER\PPM.Domain\obj\Debug\net7.0\refint\PPM.Domain.dll
 C:\Users\SDacha\Documents\New folder\PROLIFICS PROJECT MANAGER\PPM.Domain\obj\Debug\net7.0\PPM.Domain.pdb
 C:\Users\SDacha\Documents\New folder\PROLIFICS PROJECT MANAGER\PPM.Domain\obj\Debug\net7.0\ref\PPM.Domain.dll
+C:\Users\SDacha\Documents\New folder\PROLIFICS PROJECT MANAGER\PPM.Domain\bin\Debug\net7.0\PPM.DAL.dll
+C:\Users\SDacha\Documents\New folder\PROLIFICS PROJECT MANAGER\PPM.Domain\bin\Debug\net7.0\PPM.DAL.pdb

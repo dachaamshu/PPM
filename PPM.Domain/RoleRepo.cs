@@ -1,5 +1,6 @@
 using System.Security.Cryptography.X509Certificates;
 using PPM.Model;
+using PPM.DAL;
 
 namespace PPM.Domain
 {
@@ -8,28 +9,38 @@ namespace PPM.Domain
     public static List<Role> roleList = new List<Role>();
     public void AddEntity(Role roleObj)
     {
-
-      roleList.Add(roleObj);
+      RoleDal roleDal = new RoleDal();
+      roleDal.AddRole(roleObj);
+      //roleList.Add(roleObj);
 
     }
 
     public List<Role> ListAll()
     {
-      return roleList;
-    }
-    public Role ListById(int id)
+      //return roleList;
+      RoleDal roleDal = new RoleDal();
+      var rolelist = roleDal.ViewRole();
+      return rolelist;
 
+    }
+    public List<Role> ListById(int id)
     {
-      return roleList.Find(item => item.RoleId == id)!;
+      RoleDal roleDal = new RoleDal();
+      var rolelist = roleDal.ViewRoleIdByDal(id);
+      return rolelist;
+     // return roleList;
     }
 
     public void Delete(int id)
     {
-      var t = roleList.SingleOrDefault(item => item.RoleId == id);
-      if (t != null)
-      {
-        roleList.Remove(t);
-      }
+      // var t = roleList.SingleOrDefault(item => item.RoleId == id);
+      // if (t != null)
+      // {
+      //   roleList.Remove(t);
+      // }
+      RoleDal roleDal = new RoleDal();
+      roleDal.DeleteRoleByIdDal(id);
+
     }
   }
 }

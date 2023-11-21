@@ -1,3 +1,4 @@
+using PPM.DAL;
 using PPM.Model;
 
 namespace PPM.Domain
@@ -6,7 +7,7 @@ public class EmployeeProjectRepo : IEmployeeProject
 {
     public static List<EmployeeProject> employeeProjectList = new List<EmployeeProject>();
 
-    public void AddEmployeeToProject(int projectId, string? projectName, int employeeId, string? firstName, string? lastName, int roleId)
+     public  void AddEmployeeToProject(int projectId,string? projectName, int employeeId,string? firstName,string? lastName, int roleId)
     {
         EmployeeProject employeeProject = new EmployeeProject()
         {
@@ -17,30 +18,44 @@ public class EmployeeProjectRepo : IEmployeeProject
             LastName = lastName,
             RoleId = roleId
         };
-
-        employeeProjectList.Add(employeeProject);
+        EmployeeProjectDal employeeProjectDal = new EmployeeProjectDal();
+        employeeProjectDal.AddEmployeeToProjectDal(employeeProject);
     }
 
-    public void RemoveEmployeefromProject(int projectId, int employeeId)
+    public void RemoveEmployeefromProject(int projectId,int employeeId)
     {
 
-        int indexToRemove = employeeProjectList.FindIndex(item => item.ProjectId == projectId && item.EmployeeId == employeeId);
+        EmployeeProjectDal employeeProjectDal = new EmployeeProjectDal();
+        bool indexToRemove = employeeProjectDal.IsEmployeeProjectExists(projectId,employeeId);
+        List<EmployeeProject> employeeProjectList = employeeProjectDal.ViewEmployeeInProject();
+        employeeProjectDal.RemoveEmployeefromProjectDal(projectId,employeeId);
+        //bool indexToRemove =  employeeProjectList.FindIndex(item => item.ProjectId == projectId && item.EmployeeId == employeeId);
 
-        if (indexToRemove >= 0)
+        // if (indexToRemove >= 0)
 
-        {
+        // {
 
-            employeeProjectList.RemoveAt(indexToRemove);
+        //     employeeProjectList.RemoveAt(indexToRemove);
 
-            Console.WriteLine("Employee Removed From the Project.");
-        }
+        //     Console.WriteLine("Employee Removed From the Project.");
+        // }
 
-        else
+        // else
 
-        {
-            System.Console.WriteLine("Employee not found in the project.");
+        // {
+        //     System.Console.WriteLine("Employee not found in the project.");
 
-        }
+        // }
+
     }
+
+    public List<EmployeeProject> ViewEmployeeProject()
+    {
+        EmployeeProjectDal employeeProjectDal = new EmployeeProjectDal();
+        var employeeProjectList = employeeProjectDal.ViewEmployeeInProject();
+        return employeeProjectList;
+    }
+
 }
+
 }
